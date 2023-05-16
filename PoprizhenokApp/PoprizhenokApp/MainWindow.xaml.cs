@@ -25,16 +25,16 @@ namespace PoprizhenokApp
         public MainWindow()
         {
             InitializeComponent();
-            RefreshListBox();
             agentList.Items.Clear();
-            agentList.ItemsSource = agentsForLists;
+            AllFilter();
+            
+           // agentList.Items.Clear();
+           // agentList.ItemsSource = agentsForLists;
         }
         public void RefreshListBox()
         {
-            
+            agentsForLists.Clear();
             Demo13Entities db = new Demo13Entities();
-            
-            
             foreach(Agent agent in db.Agent)
             {
                 
@@ -56,7 +56,7 @@ namespace PoprizhenokApp
                     agentforlist.ImageSource = "Resources/picture.png";
                 }
                 agentsForLists.Add(agentforlist);
-                
+           
             }
             
         }
@@ -69,16 +69,50 @@ namespace PoprizhenokApp
             public string Phone { get; set; }
             public string Name { get; set; }
         }
+        public void AllFilter()
+        {
+            Demo13Entities db = new Demo13Entities();
+            RefreshListBox();
+            List<AgentsForList> searchagentlist = new List<AgentsForList>();
+            searchagentlist = agentsForLists;
+            searchagentlist = searchagentlist.Where(prod => prod.Name.StartsWith(SearchTb.Text) || prod.Phone.StartsWith(SearchTb.Text)).ToList();
+            if (ComboBoxSort.SelectedIndex == 2)
+            {
+                searchagentlist = searchagentlist.OrderBy(prod => prod.Priority).ToList();
+            }
+            if (ComboBoxSort.SelectedIndex == 1)
+            {
+                searchagentlist = searchagentlist.OrderByDescending(prod => prod.Priority).ToList();
+            }
+            agentList.ItemsSource = searchagentlist;
+
+        }
 
         private void SearchTb_TextChanged(object sender, TextChangedEventArgs e)
         {
-            List<AgentsForList> searchagentlist = new List<AgentsForList>();
-            searchagentlist = agentsForLists;
-            searchagentlist = searchagentlist.Where(prod => prod.Name.StartsWith(SearchTb.Text)|| prod.Phone.StartsWith(SearchTb.Text)).ToList();
-            agentList.ItemsSource = searchagentlist;
+            AllFilter();
             
+        }
 
+        private void EditBtn_Click(object sender, RoutedEventArgs e)
+        {
+            AgentsForList agent =new AgentsForList();
+            agent=(sender as Button).DataContext as AgentsForList;
+            EditAgentWindow wind = new EditAgentWindow(agent,this);
+            wind.Show();
+        }
 
+        private void AddBtn_Click(object sender, RoutedEventArgs e)
+        {
+            AgentsForList agent = new AgentsForList();
+            agent = (sender as Button).DataContext as AgentsForList;
+            AddAgent wind = new AddAgent(this);
+            wind.Show();
+        }
+
+        private void ComboBoxSort_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            AllFilter();
         }
     }
 }
